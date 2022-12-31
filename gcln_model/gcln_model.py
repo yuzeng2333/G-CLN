@@ -137,11 +137,11 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         # data preparation
         inputs_np = np.array(data, copy=True)
         inputs_np_unshifted = inputs_np.copy()
-        means_input, std_input = np.zeros([num_terms], dtype=np.double), np.zeros([num_terms], dtype=np.double)
-        for i in range(num_terms):
-            means_input[i] = np.mean(data[:, i])
-            std_input[i] = np.std(data[:, i])
-            inputs_np[:, i] = (data[:, i] - means_input[i])
+        #means_input, std_input = np.zeros([num_terms], dtype=np.double), np.zeros([num_terms], dtype=np.double)
+        #for i in range(num_terms):
+        #    means_input[i] = np.mean(data[:, i])
+        #    std_input[i] = np.std(data[:, i])
+        #    inputs_np[:, i] = (data[:, i] - means_input[i])
         inputs = torch.from_numpy(inputs_np).float()
 
         # build and train the model
