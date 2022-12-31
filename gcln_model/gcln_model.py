@@ -37,6 +37,26 @@ class makePolynomial(torch.nn.Module):
         return output
 
 
+class linearRegressionNoGate(torch.nn.Module):
+    def __init__(self, inputSize, outputSize, linear_bias):
+        super(linearRegression, self).__init__()
+        self.weight = torch.nn.Parameter(torch.Tensor(outputSize, inputSize).uniform_(-1, 1))
+        # self.weight = torch.nn.Parameter(torch.tensor([[0.5, 0.5, 0.5]], requires_grad=True))
+        self.linear_bias = linear_bias
+        if linear_bias:
+            self.bias = torch.nn.Parameter(torch.zeros(outputSize))
+
+    def forward(self, x):
+        with torch.no_grad():
+            for weight in self.weight:
+                weight = weight / torch.max(torch.abs(weight))
+        if self.linear_bias:
+            out = torch.nn.functional.linear(x, self.weight, self.bias)
+        else:
+            out = torch.nn.functional.linear(x, self.weight)
+        return out
+
+
 class linearRegression(torch.nn.Module):
     def __init__(self, inputSize, outputSize, linear_bias):
         super(linearRegression, self).__init__()
@@ -147,7 +167,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         # build and train the model
         term_gates = torch.tensor(np.random.binomial(n=1, p=1-dropout, size=(and_span * or_span, num_terms)), requires_grad=False, dtype=torch.float)
         make_poly = makePolynomial(num_terms, poly_num)
-        model = linearRegression(poly_num, and_span * or_span, linear_bias=linear_bias)
+        model = linearRegressionNoGate(poly_num, and_span * or_span, linear_bias=linear_bias)
         cln = CLN(and_span * or_span, and_span)
         optimizer = torch.optim.Adam(list(make_poly.parameters()) + list(model.parameters()) + list(cln.parameters()), lr=learning_rate)
         if v:
@@ -163,7 +183,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         for epoch in epoch_iter:
             optimizer.zero_grad()
             polynomials = make_poly(inputs)
-            linear_outputs = model(polynomials, term_gates)
+            linear_outputs = model(polynomials)
             std_vec = torch.std(linear_outputs.detach(), dim=0)
             outputs_std = torch.max(std_vec, torch.tensor([min_std]).expand_as(std_vec))
             activation = dinv.gaussian(linear_outputs, outputs_std)
