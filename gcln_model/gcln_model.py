@@ -152,6 +152,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
     debug_trace = []
     std_trace = []
     polyfit_hist = []
+    num_terms = num_terms - 2
     poly_num = 3*num_terms
     if num_terms > 1:
         # data preparation
@@ -162,6 +163,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         #    means_input[i] = np.mean(data[:, i])
         #    std_input[i] = np.std(data[:, i])
         #    inputs_np[:, i] = (data[:, i] - means_input[i])
+        inputs_np = inputs_np[:, 1:-1]
         inputs = torch.from_numpy(inputs_np).float()
 
         # build and train the model
