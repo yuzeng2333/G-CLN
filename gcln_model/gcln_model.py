@@ -39,7 +39,7 @@ class makePolynomial(torch.nn.Module):
 
 class linearRegressionNoGate(torch.nn.Module):
     def __init__(self, inputSize, outputSize, linear_bias):
-        super(linearRegression, self).__init__()
+        super(linearRegressionNoGate, self).__init__()
         self.weight = torch.nn.Parameter(torch.Tensor(outputSize, inputSize).uniform_(-1, 1))
         # self.weight = torch.nn.Parameter(torch.tensor([[0.5, 0.5, 0.5]], requires_grad=True))
         self.linear_bias = linear_bias
