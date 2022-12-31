@@ -100,6 +100,7 @@ def mle_solve(problem_number, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1),
     # print("data: \n", df_data)
     # this step takes the values for single vars, and generate values for all polynomials: a*a, a*b, ...
     # the forms of the polynomials are put at var_names
+    simple_invariants = []
     data_long, var_names_long, simple_invariants_long = setup_polynomial_data(df_data, growth_pruning=growth_pruning,
             data_cleaning_threshold=data_cleaning_threshold, pruning_threshold=pruning_threshold,
             gen_poly=gen_poly, var_deg=var_deg, max_deg=max_deg, max_relative_degree=max_relative_degree,
