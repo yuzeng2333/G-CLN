@@ -100,13 +100,12 @@ def mle_solve(problem_number, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1),
     # print("data: \n", df_data)
     # this step takes the values for single vars, and generate values for all polynomials: a*a, a*b, ...
     # the forms of the polynomials are put at var_names
-    data_long, var_names_long, simple_invariants_long = setup_polynomial_data(df_data, growth_pruning=growth_pruning,
+    data_long, var_names, simple_invariants_long = setup_polynomial_data(df_data, growth_pruning=growth_pruning,
             data_cleaning_threshold=data_cleaning_threshold, pruning_threshold=pruning_threshold,
             gen_poly=gen_poly, var_deg=var_deg, max_deg=max_deg, max_relative_degree=max_relative_degree,
             max_poly_const_terms=max_poly_const_terms, normalization=normalization,
             limit_poly_terms_to_unique_vars=limit_poly_terms_to_unique_vars, problem_number=problem_number,
             drop_high_order_consts=drop_high_order_consts, lift_redundancy_deg=lift_redundancy_deg, v=v)
-    var_names = df_data.keys()
     simple_invariants += simple_invariants_
     # print(var_names)
     # print('constant terms:', const_dict)
@@ -131,7 +130,6 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
     debug_trace = []
     std_trace = []
     polyfit_hist = []
-    poly_num = 3*num_terms
     if num_terms > 1:
         # data preparation
         inputs_np = np.array(data, copy=True)
@@ -145,8 +143,8 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
 
         # build and train the model
         term_gates = torch.tensor(np.random.binomial(n=1, p=1-dropout, size=(and_span * or_span, num_terms)), requires_grad=False, dtype=torch.float)
-        make_poly = makePolynomial(num_terms, poly_num)
-        model = linearRegression(poly_num, and_span * or_span, linear_bias=linear_bias)
+        make_poly = makePolynomial(num_terms, 3*num_terms)
+        model = linearRegression(num_terms, and_span * or_span, linear_bias=linear_bias)
         cln = CLN(and_span * or_span, and_span)
         optimizer = torch.optim.Adam(list(make_poly.parameters()) + list(model.parameters()) + list(cln.parameters()), lr=learning_rate)
         if v:
