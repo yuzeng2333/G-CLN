@@ -25,6 +25,18 @@ def is_notebook():
         return False      # Probably standard Python interpreter
 
 
+class makePolynomial(torch.nn.Module):
+    def __init__(self, inputSize, outputSize, linear_bias):
+        super(makePolynomial, self).__init__()
+        self.weight = torch.nn.Parameter(torch.Tensor(outputSize, inputSize).uniform_(-1, 1))
+
+    def forward(self, x):
+        log_x = torch.log(x)
+        linear = torch.nn.functional.linear(log_x, self.weight)
+        output = torch.exp(linear)
+        return out
+
+
 class linearRegression(torch.nn.Module):
     def __init__(self, inputSize, outputSize, linear_bias):
         super(linearRegression, self).__init__()
@@ -86,6 +98,8 @@ def mle_solve(problem_number, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1),
             df = pd.read_csv(csv_path + str(problem_number) + '_' + str(loop_index) + ".csv", skipinitialspace=True)
         df_data = df[df['trace_idx'] == loop_index].drop(columns=['trace_idx'])
     # print("data: \n", df_data)
+    # this step takes the values for single vars, and generate values for all polynomials: a*a, a*b, ...
+    # the forms of the polynomials are put at var_names
     data, var_names, simple_invariants = setup_polynomial_data(df_data, growth_pruning=growth_pruning,
             data_cleaning_threshold=data_cleaning_threshold, pruning_threshold=pruning_threshold,
             gen_poly=gen_poly, var_deg=var_deg, max_deg=max_deg, max_relative_degree=max_relative_degree,

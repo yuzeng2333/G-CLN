@@ -373,12 +373,16 @@ if __name__ == '__main__':
             # try:
             loop_idx = i + 1
             print(p, 'loop', loop_idx)
+            # true for knuth
             if normalization is False:
                 problem[i].normalization = False
+            # true for knuth
             if regularization is False:
                 problem[i].weight_reg = False
+            # true for knuth                
             if dropout is False:
                 problem[i].dropout = 0.0
+            # true for knuth                
             if fractional_sampling is False:
                 problem[i].fractional_sampling = False
             
