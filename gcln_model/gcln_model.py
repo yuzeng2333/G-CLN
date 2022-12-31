@@ -38,7 +38,7 @@ class linearRegression(torch.nn.Module):
         with torch.no_grad():
             self.weight.data = self.weight * term_gates
             for weight in self.weight:
-                weight /= torch.max(torch.abs(weight))
+                weight = weight / torch.max(torch.abs(weight))
         if self.linear_bias:
             out = torch.nn.functional.linear(x, self.weight, self.bias)
         else:
