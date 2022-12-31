@@ -115,7 +115,7 @@ def mle_solve(problem_number, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1),
     if simple_invariant:
         return simple_invariants, [], var_names
 
-    final_result = multi_lin_eq_solve(data, and_span=and_span, or_span=or_span, or_reg=or_reg, and_reg=and_reg, linear_bias=linear_bias,
+    final_result = multi_lin_eq_solve(df_data, and_span=and_span, or_span=or_span, or_reg=or_reg, and_reg=and_reg, linear_bias=linear_bias,
             max_denominator=max_denominator, learning_rate=learning_rate, dropout=dropout, decay=decay,
                        max_epoch=max_epoch, loss_threshold=loss_threshold, min_std=min_std, v=v)
 
