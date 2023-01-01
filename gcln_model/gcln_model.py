@@ -34,7 +34,7 @@ class makePolynomial(torch.nn.Module):
         log_x = torch.log(x)
         linear = torch.nn.functional.linear(log_x, self.weight)
         output = torch.exp(linear)
-        return outputinputs
+        return output
 
 
 class linearRegressionNoGate(torch.nn.Module):
