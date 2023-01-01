@@ -34,7 +34,7 @@ class makePolynomial(torch.nn.Module):
         log_x = torch.log(x)
         linear = torch.nn.functional.linear(log_x, self.weight)
         output = torch.exp(linear)
-        return output
+        return outputinputs
 
 
 class linearRegressionNoGate(torch.nn.Module):
@@ -147,7 +147,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
                        learning_rate=0.01, decay=1.0, max_epoch=50, loss_threshold=0.0, min_std=0.1, dropout=0.2, log_polyfit=False, v=False):
     data_size, num_terms = data.shape[0], data.shape[1]
     or_reg, or_reg_decay, max_or_reg = or_reg
-    and_reg, and_reg_decay, min_and_reg = and_reg
+    and_reg, and_reg_decay, min_and_reg = and_reg 
     loss_hist = []
     debug_trace = []
     std_trace = []
@@ -165,6 +165,8 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         #    inputs_np[:, i] = (data[:, i] - means_input[i])
         inputs_np = inputs_np[:, 1:-1]
         inputs = torch.from_numpy(inputs_np).float()
+        # preprocess: 1. abs(), 2. +1
+        inputs = torch.add(torch.abs(inputs), 1)
 
         # build and train the model
         term_gates = torch.tensor(np.random.binomial(n=1, p=1-dropout, size=(and_span * or_span, num_terms)), requires_grad=False, dtype=torch.float)
