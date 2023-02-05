@@ -248,7 +248,6 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
                 break
 
         # calculate final coeff
-        '''
         if True:  # valid_equality_found:
             model.weight.data = model.weight * term_gates
             for weight in model.weight:
@@ -279,7 +278,6 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
         polyfit_hist = np.stack(polyfit_hist)
     if v: 
         print (coeffs)
-    '''
  
     # return or_gates, and_gates, coeff_, coeffs, loss_hist, pd.DataFrame(debug_trace, columns=['loss', 'l_2', 'l_sqrt']), polyfit_hist
     # return  (or_gates, and_gates, coeff_, coeffs, loss_hist, (debug_trace, std_trace, polyfit_hist)), final_guess
