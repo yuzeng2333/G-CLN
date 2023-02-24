@@ -107,7 +107,7 @@ def mle_solve(problem_number, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1),
     simple_invariants_ = []
     if type(problem_number) == int:
         df = pd.read_csv("../traces/" + str(problem_number) + ".csv", skipinitialspace=True)
-        df_data = df.drop(columns=['trace_idx', 'init', 'final'], errors='ignore')
+        df_data = df.drop(columns=['trace_idx', 'init', 'final', 'while_counter', 'run_id'], errors='ignore')
     else:
         if pre_sample:
             df = pd.read_csv(csv_path + str(problem_number) + ".csv", skipinitialspace=True)
@@ -152,28 +152,25 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
     debug_trace = []
     std_trace = []
     polyfit_hist = []
-    num_terms = num_terms - 2
-    poly_num = 3*num_terms
     if num_terms > 1:
         # data preparation
         inputs_np = np.array(data, copy=True)
-        inputs_np_unshifted = inputs_np.copy()
-        #means_input, std_input = np.zeros([num_terms], dtype=np.double), np.zeros([num_terms], dtype=np.double)
-        #for i in range(num_terms):
-        #    means_input[i] = np.mean(data[:, i])
-        #    std_input[i] = np.std(data[:, i])
-        #    inputs_np[:, i] = (data[:, i] - means_input[i])
-        inputs_np = inputs_np[:, 1:-1]
-        inputs = torch.from_numpy(inputs_np).float()
         # preprocess: 1. abs(), 2. +1
-        inputs = torch.add(torch.abs(inputs), 1)
+        inputs_np = np.absolute(inputs_np) + 1
+        inputs_np = np.log(inputs_np)
+        means_input, std_input = np.zeros([num_terms], dtype=np.double), np.zeros([num_terms], dtype=np.double)        
+        for i in range(num_terms):
+            means_input[i] = np.mean(inputs_np[:, i])
+            std_input[i] = np.std(inputs_np[:, i])
+            inputs_np[:, i] = (inputs_np[:, i] - means_input[i])
+        inputs = torch.from_numpy(inputs_np).float()
 
-        # build and train the model
-        term_gates = torch.tensor(np.random.binomial(n=1, p=1-dropout, size=(and_span * or_span, num_terms)), requires_grad=False, dtype=torch.float)
-        make_poly = makePolynomial(num_terms, poly_num)
-        model = linearRegressionNoGate(poly_num, and_span * or_span, linear_bias=linear_bias)
+        # yuzeng
+        model = linearRegressionNoGate(num_terms, and_span * or_span, True)
         cln = CLN(and_span * or_span, and_span)
-        optimizer = torch.optim.Adam(list(make_poly.parameters()) + list(model.parameters()) + list(cln.parameters()), lr=learning_rate)
+        # yuzeng
+        # optimizer = torch.optim.Adam(list(make_poly.parameters()) + list(model.parameters()) + list(cln.parameters()), lr=learning_rate)
+        optimizer = torch.optim.Adam(list(model.parameters()) + list(cln.parameters()), lr=learning_rate)
         if v:
             print('initial model weights:', model.weight.detach().numpy().round(2))
 
@@ -186,8 +183,8 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
 
         for epoch in epoch_iter:
             optimizer.zero_grad()
-            polynomials = make_poly(inputs)
-            linear_outputs = model(polynomials)
+            linear_outputs_log = model(inputs)
+            linear_outputs = torch.exp(linear_outputs_log)
             std_vec = torch.std(linear_outputs.detach(), dim=0)
             outputs_std = torch.max(std_vec, torch.tensor([min_std]).expand_as(std_vec))
             activation = dinv.gaussian(linear_outputs, outputs_std)
@@ -231,7 +228,7 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
             for param_group in optimizer.param_groups:
                 param_group['lr'] *= decay
 
-            if True and epoch % 100 == 0:
+            if True and epoch % 500 == 0:
                 print('epoch {}, main_loss {}, loss {}'.format(epoch, main_loss.item(), loss.item()))
                 print("standard deviation: ", outputs_std)
                 # print('model weights grad:', model.weight.grad)
@@ -249,9 +246,9 @@ def multi_lin_eq_solve(data, and_span=2, or_span=2, or_reg=(0.001, 1.001, 0.1), 
 
         # calculate final coeff
         if True:  # valid_equality_found:
-            model.weight.data = model.weight * term_gates
+            model.weight.data = model.weight
             for weight in model.weight:
-                weight /= torch.max(torch.abs(weight))
+                weight = weight / torch.max(torch.abs(weight))
             coeff_ = model.weight.detach().numpy()
             or_gates = cln.or_gates.detach().numpy()
             and_gates = cln.and_gates.detach().numpy()

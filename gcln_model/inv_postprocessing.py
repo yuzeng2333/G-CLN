@@ -2,7 +2,7 @@ import numpy as np
 from z3 import *
 from functools import reduce
 
-
+# yuzeng:coeffs are the weights of the linear layer
 def filter_coeffs(coeffs, and_gates, or_gates, inputs):
     # filter valid invariants by and_gates, or_gates and fitting error
     data_size, or_span, and_span = inputs.shape[0], or_gates.shape[1], len(and_gates)
